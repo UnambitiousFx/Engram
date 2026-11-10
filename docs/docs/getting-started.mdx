@@ -1,0 +1,75 @@
+---
+sidebar_position: 2
+title: Getting Started
+description: Install UnambitiousFx.Engram, canonicalize a JSON document and compute its fingerprint.
+---
+
+# Getting Started
+
+## Install
+
+```bash
+dotnet add package UnambitiousFx.Engram
+```
+
+Engram targets `net8.0`, `net9.0` and `net10.0` and has no dependency beyond the BCL.
+
+## Canonicalize
+
+Everything is on one static class, `JsonCanonicalizer`, in the `UnambitiousFx.Engram` namespace.
+
+```csharp
+using UnambitiousFx.Engram;
+
+var json = """{ "b": [1, 2.50], "a": "x" }""";
+
+string canonical = JsonCanonicalizer.Canonicalize(json);
+// {"a":"x","b":[1,2.5]}
+```
+
+## Fingerprint
+
+```csharp
+string hash = JsonCanonicalizer.Hash(json);
+// 64 lowercase hexadecimal characters: the SHA-256 of the UTF-8 canonical form
+```
+
+Two texts with the same data have the same fingerprint, whatever their formatting.
+
+## Inputs
+
+`Canonicalize`, `CanonicalizeToUtf8` and `Hash` all accept the same inputs:
+
+| Input | Example |
+|---|---|
+| JSON text | `JsonCanonicalizer.Hash("""{"a":1}""")` |
+| UTF-8 bytes | `JsonCanonicalizer.Hash(body.AsSpan())` |
+| `JsonElement` | `JsonCanonicalizer.Hash(document.RootElement)` |
+| `JsonNode?` | `JsonCanonicalizer.Hash(node)`; a `null` node is JSON `null` |
+| A typed value | `JsonCanonicalizer.Hash(order, AppJsonContext.Default.Order)` |
+
+The typed overload serializes through the source-generated `JsonTypeInfo<T>` of a `JsonSerializerContext`, so it works
+under trimming and NativeAOT:
+
+```csharp
+public record Order(string Currency, decimal Amount);
+
+[JsonSerializable(typeof(Order))]
+public partial class AppJsonContext : JsonSerializerContext;
+
+var fingerprint = JsonCanonicalizer.Hash(new Order("EUR", 12.50m), AppJsonContext.Default.Order);
+```
+
+:::note
+A `string` argument is parsed as JSON text. To canonicalize a JSON *string value*, pass a `JsonNode`:
+`JsonCanonicalizer.Canonicalize(JsonValue.Create("text"))` gives `"text"`.
+:::
+
+## Errors
+
+| Exception | When |
+|---|---|
+| `JsonException` | The text is not valid JSON. |
+| `FormatException` | The value has no RFC 8785 canonical form: a duplicate member name, a number outside the double range, a lone surrogate. |
+
+Catch them where the JSON enters your system, as you would for any parsing.

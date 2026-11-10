@@ -1,0 +1,25 @@
+<Solution>
+    <Folder Name="/benchmarks/">
+        <Project Path="benchmarks/EngramBenchmark/EngramBenchmark.csproj" />
+    </Folder>
+    <Folder Name="/examples/">
+        <Project Path="examples/BasicUsage/BasicUsage.csproj" />
+    </Folder>
+    <Folder Name="/src/">
+        <Project Path="src/Engram/Engram.csproj" />
+    </Folder>
+    <Folder Name="/src/_/">
+        <File Path="src/Directory.Build.props" />
+    </Folder>
+    <Folder Name="/test/">
+        <Project Path="test/Engram.Tests/Engram.Tests.csproj" />
+    </Folder>
+    <Folder Name="/_/">
+        <File Path="build.props" />
+        <File Path="CONTRIBUTING.md" />
+        <File Path="Directory.Packages.props" />
+        <File Path="global.json" />
+        <File Path="LICENSE" />
+        <File Path="README.md" />
+    </Folder>
+</Solution>

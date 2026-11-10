@@ -1,0 +1,72 @@
+---
+sidebar_position: 4
+title: Fingerprints
+description: Use the SHA-256 of the canonical form as an idempotency key, a change detector, an ETag, or sign the canonical bytes.
+---
+
+# Fingerprints
+
+`JsonCanonicalizer.Hash` returns the lowercase hexadecimal SHA-256 of the UTF-8 canonical form: 64 characters. Two JSON
+values with the same data have the same fingerprint, however they were written.
+
+```csharp
+JsonCanonicalizer.Hash("""{ "amount": 12.50, "currency": "EUR" }""")
+    == JsonCanonicalizer.Hash("""{"currency":"EUR","amount":12.5}""");   // true
+```
+
+## Idempotency and deduplication
+
+Store the fingerprint of what you processed; a second submission of the same data, however it was formatted, has the
+same key.
+
+```csharp
+app.MapPost("/imports", async (HttpRequest request, IImportStore store) =>
+{
+    using var body = await JsonDocument.ParseAsync(request.Body);
+    var key = JsonCanonicalizer.Hash(body.RootElement);
+
+    if (await store.ExistsAsync(key))
+    {
+        return Results.Ok(new { status = "already imported" });
+    }
+
+    // process, then store.Add(key)
+});
+```
+
+## Change detection
+
+Keep the fingerprint of the last export, not the whole document; compare it with the fingerprint of the new one.
+
+```csharp
+var current = JsonCanonicalizer.Hash(export, AppJsonContext.Default.Export);
+if (current != lastExportHash)
+{
+    // the data changed since the last export
+}
+```
+
+## ETags
+
+A fingerprint of the response body is a strong ETag that does not depend on when the data was written:
+
+```csharp
+var etag = $"\"{JsonCanonicalizer.Hash(dto, AppJsonContext.Default.Dto)}\"";
+```
+
+## Signatures and HMAC
+
+Sign the canonical **bytes**, not the serializer output: a verifier that parses and re-serializes the JSON still checks
+the same bytes.
+
+```csharp
+byte[] payload = JsonCanonicalizer.CanonicalizeToUtf8(document.RootElement);
+byte[] mac = HMACSHA256.HashData(secret, payload);
+```
+
+## What a fingerprint does not do
+
+- It identifies **JSON data**, not domain values: `12.5` and `12.50` are the same number, but `"12.50"` is a string and
+  hashes differently. Normalize domain values before serializing if they must compare equal.
+- SHA-256 detects any change, but a bare fingerprint is not an authentication: anyone can compute it. Use an HMAC or a
+  signature when the sender must be trusted.

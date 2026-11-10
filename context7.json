@@ -1,0 +1,15 @@
+{
+  "$schema": "https://context7.com/schema/context7.json",
+  "projectTitle": "UnambitiousFx Engram",
+  "description": "RFC 8785 JSON Canonicalization Scheme (JCS) for .NET: a deterministic canonical form for any JSON value and a SHA-256 content fingerprint, NativeAOT-ready.",
+  "branch": "main",
+  "folders": [
+    "docs/docs"
+  ],
+  "rules": [
+    "Use JsonCanonicalizer.Canonicalize / CanonicalizeToUtf8 / Hash; they accept a JsonElement, a JSON string, UTF-8 bytes, a JsonNode, or a value with its JsonTypeInfo<T>.",
+    "Hash returns the lowercase hex SHA-256 of the UTF-8 canonical form: sign or HMAC CanonicalizeToUtf8, never the output of JsonSerializer directly.",
+    "Input with no canonical form (duplicate member names, numbers outside the double range, lone surrogates) throws FormatException; invalid JSON text throws JsonException.",
+    "For NativeAOT, serialize typed values through a source-generated JsonSerializerContext (JsonTypeInfo<T>) overload."
+  ]
+}

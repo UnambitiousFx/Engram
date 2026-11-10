@@ -1,0 +1,41 @@
+---
+sidebar_position: 1
+title: Engram
+description: RFC 8785 JSON Canonicalization Scheme (JCS) for .NET. One deterministic form for any JSON value, and a SHA-256 fingerprint to compare, deduplicate or sign JSON.
+---
+
+# Engram
+
+UnambitiousFx.Engram implements [RFC 8785](https://www.rfc-editor.org/rfc/rfc8785), the JSON Canonicalization Scheme
+(JCS), for .NET. It turns any JSON value into one deterministic text, and gives a SHA-256 fingerprint of that text.
+
+> An *engram* is the stable trace a memory leaves in the brain. Here, it is the trace a JSON document leaves: its
+> canonical form and its fingerprint.
+
+## Why canonicalize?
+
+Two JSON texts can carry the same data and still differ byte for byte:
+
+```json
+{ "currency": "EUR", "amount": 12.50 }
+{"amount":12.5,"currency":"EUR"}
+```
+
+Member order, whitespace, number formatting (`12.50` and `12.5`, `1e3` and `1000`) and string escapes all change the
+bytes without changing the data. Hashing or signing those bytes directly gives different results for the same data.
+RFC 8785 defines one form that every conforming implementation produces, in any language.
+
+## Key features
+
+- **RFC 8785 canonical form** of a `JsonElement`, a `JsonNode`, a JSON text (string or UTF-8 bytes), or a typed value
+  serialized through its source-generated `JsonTypeInfo<T>`.
+- **Content fingerprint**: the lowercase hex SHA-256 of the UTF-8 canonical form.
+- **ECMAScript number formatting**, as RFC 8785 requires: the shortest digits that round-trip.
+- **Strict**: input with no canonical form throws a `FormatException`.
+- **Dependency-free and NativeAOT-ready**, for `net8.0`, `net9.0` and `net10.0`.
+
+## Where next
+
+- [Getting Started](getting-started): install the package and canonicalize a document.
+- [Canonicalization](canonicalization): what the canonical form changes, and what it refuses.
+- [Fingerprints](fingerprints): idempotency keys, change detection, signatures and ETags.
