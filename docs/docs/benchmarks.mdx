@@ -1,0 +1,40 @@
+---
+title: Benchmarks
+description: Time and allocations of canonicalization and hashing for small and large JSON documents.
+---
+
+# Benchmarks
+
+The suite in `benchmarks/EngramBenchmark` canonicalizes and fingerprints an object holding an array of `Items` records
+(a name, a decimal price, two tags, a boolean and an id), from a parsed `JsonElement` and from raw UTF-8 bytes.
+
+| Benchmark | What it measures |
+|---|---|
+| `Canonicalize` | `Canonicalize(JsonElement)`: the canonical text (baseline) |
+| `Hash` | `Hash(JsonElement)`: canonical form, UTF-8 encoding and SHA-256 |
+| `HashFromUtf8` | `Hash(ReadOnlySpan<byte>)`: the same, parsing included |
+
+## Results
+
+BenchmarkDotNet 0.15.8, `ShortRun` (3 warmups, 3 iterations), .NET 10.0.14, Apple M5 Pro, macOS.
+
+| Method       | Items | Mean       | Allocated  |
+|------------- |------:|-----------:|-----------:|
+| Canonicalize | 10    |   4.10 µs  |   16.85 KB |
+| Hash         | 10    |   4.50 µs  |   17.77 KB |
+| HashFromUtf8 | 10    |   7.50 µs  |   17.84 KB |
+| Canonicalize | 1000  | 446.07 µs  | 1627.18 KB |
+| Hash         | 1000  | 479.36 µs  | 1699.59 KB |
+| HashFromUtf8 | 1000  | 773.53 µs  | 1699.66 KB |
+
+Hashing adds about 10% to canonicalization; parsing the bytes adds about 70%. Time and allocations grow linearly with
+the document. The 1.0 implementation favours exactness over speed (it builds a `string` and sorts members in lists), so
+allocations are the first thing to improve.
+
+## Running the benchmarks
+
+```bash
+dotnet run --project benchmarks/EngramBenchmark -c Release
+# a quick, less precise run
+dotnet run --project benchmarks/EngramBenchmark -c Release -- --filter '*' --job short
+```

@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\Engram\Engram.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- RFC 8785 test vectors, read at run time from the output directory -->
+        <None Include="vectors\**\*" CopyToOutputDirectory="PreserveNewest"/>
+    </ItemGroup>
+</Project>

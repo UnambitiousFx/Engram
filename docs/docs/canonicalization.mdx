@@ -1,0 +1,71 @@
+---
+sidebar_position: 3
+title: Canonicalization
+description: What the RFC 8785 canonical form changes in a JSON text — member order, whitespace, numbers, strings — and the input it refuses.
+---
+
+# Canonicalization
+
+`JsonCanonicalizer.Canonicalize` produces the RFC 8785 canonical form of a JSON value. Use `CanonicalizeToUtf8` when you
+need the bytes (to sign, to hash with another algorithm, to store): they are UTF-8 without a byte order mark.
+
+## What changes
+
+| Rule | Input | Canonical |
+|---|---|---|
+| No whitespace outside strings | `{ "a" : [ 1 , 2 ] }` | `{"a":[1,2]}` |
+| Members sorted by UTF-16 code units, recursively | `{"b":1,"a":{"d":1,"c":2}}` | `{"a":{"c":2,"d":1},"b":1}` |
+| Numbers as ECMAScript prints them | `[4.50, 1E30, 2e-3, 100]` | `[4.5,1e+30,0.002,100]` |
+| Minimal string escaping | a `/` written `\/` | `/` |
+| Literals unchanged | `[null, true, false]` | `[null,true,false]` |
+
+Array order is data, so it is kept.
+
+### Member order
+
+Members are sorted by their names' UTF-16 code units, not by Unicode code points or by culture. A character outside
+the Basic Multilingual Plane (an emoji, for example) is a surrogate pair starting at `0xD800`, so it sorts *before* a
+character such as `U+FFFF`. Digits are characters too: `"10"` sorts before `"2"`.
+
+### Numbers
+
+JSON numbers become IEEE 754 doubles, then are written as ECMAScript's `Number.prototype.toString` writes them:
+
+- the shortest digits that read back as the same double (`333333333.33333329` becomes `333333333.3333333`);
+- no exponent from `1e-6` up to `1e21`, an exponent outside (`1e+21`, `1e-7`);
+- no trailing zeros, no `+` on positive numbers, `-0` written `0`.
+
+`JsonCanonicalizer.FormatNumber(double)` exposes this formatting on its own.
+
+:::caution Precision
+A canonical form is about JSON data, which RFC 8785 reads as doubles. Integers above 2^53 and decimals with more than
+about 15 significant digits lose precision. If an exact large number matters (an identifier, an amount in a currency
+with many decimals), send it as a JSON string.
+:::
+
+### Strings
+
+Only `"`, `\` and the control characters below `U+0020` are escaped; `\b`, `\t`, `\n`, `\f` and `\r` use their short
+form, the others use a lowercase six-character `\u` escape. Every other character, including non-ASCII ones, is written
+as itself.
+
+## What is refused
+
+RFC 8785 has no canonical form for some valid JSON. Engram throws a `FormatException` rather than produce a form that
+another implementation would not reproduce:
+
+| Input | Why |
+|---|---|
+| `{"a":1,"a":2}` | Duplicate member names: which value would be canonical? |
+| `[1e400]` | The number does not fit in a double. |
+| A string or member name with a lone surrogate (an unpaired escape in the `D800`–`DFFF` range) | It cannot be encoded in UTF-8. |
+
+`NaN` and infinities cannot appear in JSON text; `FormatNumber` refuses them with the same exception.
+
+## Conformance
+
+Every build runs the canonicalizer against:
+
+- the number samples of RFC 8785 Appendix B;
+- the input and output files of the [reference implementation](https://github.com/cyberphone/json-canonicalization),
+  compared byte for byte.
