@@ -35,7 +35,7 @@ release (see [Release Process](#release-process)).
 
 ### Prerequisites
 
-- [.NET 10 SDK](https://dotnet.microsoft.com/download), plus the .NET 8 and 9 runtimes to run the tests on every target
+- [.NET 11 SDK](https://dotnet.microsoft.com/download), plus the .NET 8, 9 and 10 runtimes to run the tests on every target
 - An IDE: [JetBrains Rider](https://www.jetbrains.com/rider/), [Visual Studio](https://visualstudio.microsoft.com/), or
   [VS Code](https://code.visualstudio.com/)
 
@@ -69,14 +69,14 @@ Engram/
 ## Testing Your Changes
 
 ```bash
-# All tests, on net8.0, net9.0 and net10.0
+# All tests, on net8.0, net9.0, net10.0 and net11.0
 dotnet test --solution Engram.slnx
 
 # With coverage (Microsoft Testing Platform)
 dotnet test --solution Engram.slnx --coverage --coverage-output-format cobertura --coverage-settings ./test/coverage.settings.xml
 
 # The NativeAOT sample
-dotnet publish examples/BasicUsage -c Release -r <rid> --self-contained
+dotnet publish examples/BasicUsage -c Release -f net11.0 -r <rid> --self-contained
 ```
 
 The vectors under `test/Engram.Tests/vectors` are copied unmodified from the RFC and its reference implementation; never
