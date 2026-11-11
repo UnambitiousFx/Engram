@@ -76,7 +76,7 @@ dotnet test --solution Engram.slnx
 dotnet test --solution Engram.slnx --coverage --coverage-output-format cobertura --coverage-settings ./test/coverage.settings.xml
 
 # The NativeAOT sample
-dotnet publish examples/BasicUsage -c Release -r <rid> --self-contained
+dotnet publish examples/BasicUsage -c Release -f net11.0 -r <rid> --self-contained
 ```
 
 The vectors under `test/Engram.Tests/vectors` are copied unmodified from the RFC and its reference implementation; never
