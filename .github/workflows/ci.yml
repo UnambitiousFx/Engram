@@ -74,13 +74,11 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
 
   native-aot:
-    name: Native AOT Validation (${{ matrix.tfm }})
+    name: Native AOT Validation
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        # One run per target of the example, so each library build is checked under NativeAOT.
-        tfm: [net10.0, net11.0]
-      fail-fast: false
+    env:
+      # Every target of the example is published and run, so each library build is checked under NativeAOT.
+      AOT_TFMS: "net10.0 net11.0"
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
@@ -93,25 +91,29 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Publish Native AOT
-        run: >
-          dotnet publish examples/BasicUsage/BasicUsage.csproj
-          --configuration Release
-          --runtime linux-x64
-          --self-contained
-          --framework ${{ matrix.tfm }}
+        run: |
+          for tfm in $AOT_TFMS; do
+            dotnet publish examples/BasicUsage/BasicUsage.csproj \
+              --configuration Release \
+              --runtime linux-x64 \
+              --self-contained \
+              --framework "$tfm"
+          done
 
       - name: Run the AOT binary
         run: |
-          AOT_BINARY="examples/BasicUsage/bin/Release/${{ matrix.tfm }}/linux-x64/publish/UnambitiousFx.Examples.BasicUsage"
-          output=$("$AOT_BINARY")
-          echo "$output"
-          # Fingerprints of the RFC 8785 section 3.2.4 sample and of a typed value: a trimming or AOT regression changes them.
-          for expected in \
-            2d5e01a318d0f0879ab568c4be289c8b1f64ef8921a53c6277d5e069978baacb \
-            2b62d9274a0265e7e1286a38436b99e10b4be03844db5a70504404d128da678d; do
-            if ! grep -qxF "$expected" <<< "$output"; then
-              echo "✗ The AOT binary did not print $expected"
-              exit 1
-            fi
+          for tfm in $AOT_TFMS; do
+            AOT_BINARY="examples/BasicUsage/bin/Release/$tfm/linux-x64/publish/UnambitiousFx.Examples.BasicUsage"
+            output=$("$AOT_BINARY")
+            echo "$output"
+            # Fingerprints of the RFC 8785 section 3.2.4 sample and of a typed value: a trimming or AOT regression changes them.
+            for expected in \
+              2d5e01a318d0f0879ab568c4be289c8b1f64ef8921a53c6277d5e069978baacb \
+              2b62d9274a0265e7e1286a38436b99e10b4be03844db5a70504404d128da678d; do
+              if ! grep -qxF "$expected" <<< "$output"; then
+                echo "✗ The $tfm AOT binary did not print $expected"
+                exit 1
+              fi
+            done
+            echo "✓ Canonicalization and hashing work under Native AOT ($tfm)"
           done
-          echo "✓ Canonicalization and hashing work under Native AOT"
