@@ -21,7 +21,7 @@ Two JSON texts can carry the same data and still differ byte for byte: member or
 
 - **Dependency-free**: only the BCL and `System.Text.Json`.
 - **NativeAOT and trimming compatible**: CI publishes and runs an AOT binary on every change.
-- **Supported .NET versions**: `net8.0`, `net9.0`, and `net10.0`.
+- **Supported .NET versions**: `net8.0`, `net9.0`, `net10.0`, and `net11.0`.
 
 ## 🎯 Features
 
