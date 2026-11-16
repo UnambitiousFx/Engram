@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://engram.unambitiousfx.com/sitemap.xml

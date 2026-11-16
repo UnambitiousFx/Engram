@@ -11,7 +11,7 @@ fingerprint of that form. Namespace: `UnambitiousFx.Engram`. Solution: `Engram.s
 | `test/Engram.Tests` | Tests, with the RFC 8785 vectors under `vectors/` (see `vectors/SOURCE.md`) |
 | `benchmarks/EngramBenchmark` | BenchmarkDotNet benchmarks |
 | `examples/BasicUsage` | Console sample; CI publishes it with NativeAOT and checks its fingerprints |
-| `docs/` | Docusaurus site (`engram.unambitiousfx.com`) |
+| `docs/` | Docs pages + sidebar, published at `unambitiousfx.com/engram/` |
 
 ## Principles
 

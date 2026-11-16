@@ -5,7 +5,7 @@
 [![codecov](https://codecov.io/gh/UnambitiousFx/Engram/branch/main/graph/badge.svg)](https://codecov.io/gh/UnambitiousFx/Engram)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![.NET](https://img.shields.io/badge/.NET-10.0-blue.svg)](https://dotnet.microsoft.com/download)
-[![Documentation](https://img.shields.io/badge/docs-engram.unambitiousfx.com-blue)](https://engram.unambitiousfx.com)
+[![Documentation](https://img.shields.io/badge/docs-unambitiousfx.com%2Fengram-blue)](https://unambitiousfx.com/engram/)
 
 [RFC 8785](https://www.rfc-editor.org/rfc/rfc8785) JSON Canonicalization Scheme (JCS) for .NET: one deterministic form
 for any JSON value, and a SHA-256 fingerprint of that form.
